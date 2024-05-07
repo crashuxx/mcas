@@ -21,7 +21,10 @@ add_executable(mcas main.cpp
         src/encryption/AESEncryption.h
         src/hash.h
         src/session.cpp
-        src/session.h)
+        src/session.h
+        src/protocol/login_play.cpp
+        src/protocol/login_play.h
+        src/protocol/types.h)
 
 
 find_package(OpenSSL REQUIRED)

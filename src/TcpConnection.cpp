@@ -85,7 +85,7 @@ namespace mcas {
         auto end = next(begin, length);
 
         do {
-            auto bytes_read = pt_read_int32_t(begin, end, &packetLength);
+            auto bytes_read = protocol::pt_read_int32_t(begin, end, &packetLength);
             if (bytes_read <= 0 || packetLength + bytes_read > length) {
                 std::cerr << "Malformed data. Closing" << std::endl;
                 closeAndUnregister();

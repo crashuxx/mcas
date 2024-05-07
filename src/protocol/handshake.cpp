@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-namespace protocol::handshake {
+namespace mcas::protocol {
 
     std::vector<char> makeSwitchProtocol(
             int32_t protocolVersion,
@@ -36,7 +36,7 @@ namespace protocol::handshake {
         auto it = begin;
         auto *switchProtocol = new SwitchProtocol();
 
-        ptrdiff_t bytes_read = ::pt_read_int32_t(it, end, &switchProtocol->protocolVersion);
+        ptrdiff_t bytes_read = pt_read_int32_t(it, end, &switchProtocol->protocolVersion);
         assert(bytes_read >= 0);
         it = next(it, bytes_read);
 

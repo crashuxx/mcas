@@ -21,13 +21,13 @@ namespace mcas {
         auto iterator = begin;
 
         int32_t messageId;
-        auto bytes_read = pt_read_int32_t(iterator, end, &messageId);
+        auto bytes_read = protocol::pt_read_int32_t(iterator, end, &messageId);
         assert(bytes_read > 0 && bytes_read <= 5);
         iterator = next(iterator, bytes_read);
 
-        if (messageId == ::protocol::login::MT_LOGIN_REQUEST) {
+        if (messageId == protocol::MT_LOGIN_REQUEST) {
 
-            std::unique_ptr<::protocol::login::Login> login(::protocol::login::decodeLogin(iterator, end));
+            std::unique_ptr<protocol::Login> login(protocol::decodeLogin(iterator, end));
 
             std::cout << "New login" << login->name << std::endl;
 
@@ -39,13 +39,13 @@ namespace mcas {
             vt.reserve(4);
             generate_n(std::back_inserter(vt), 4, std::rand);
 
-            const std::vector<char> &request = ::protocol::login::makeEncryptionRequest(serverId, connection.rsaEncryption().getPublicKey(), vt);
+            const std::vector<char> &request = protocol::makeEncryptionRequest(serverId, connection.rsaEncryption().getPublicKey(), vt);
 
             connection.send(request);
 
         } else if (messageId == 0x01) {
 
-            ::protocol::login::EncryptionResponse *response = ::protocol::login::decodeEncryptionResponse(iterator, end);
+            protocol::EncryptionResponse *response = protocol::decodeEncryptionResponse(iterator, end);
 
             std::vector<char> vt = {'v', 't', 'v', 't'};
             std::vector<char> decodedToken;
@@ -58,7 +58,7 @@ namespace mcas {
             connection.aesEncryption(pEncryption);
 
             std::string login;
-            const std::vector<char> &success = ::protocol::login::makeLoginSuccess(0,
+            const std::vector<char> &success = protocol::makeLoginSuccess(0,
                                                                                  0x0,
                                                                                  login);
 
@@ -79,13 +79,13 @@ namespace mcas {
         auto iterator = begin;
 
         int32_t messageId;
-        auto bytes_read = pt_read_int32_t(iterator, end, &messageId);
+        auto bytes_read = protocol::pt_read_int32_t(iterator, end, &messageId);
         assert(bytes_read > 0 && bytes_read <= 5);
         iterator = next(iterator, bytes_read);
 
-        if (messageId == ::protocol::handshake::MT_SWITCH_PROTOCOL) {
-            std::unique_ptr<::protocol::handshake::SwitchProtocol> switchProtocol(
-                    ::protocol::handshake::decodeSwitchProtocol(iterator, end));
+        if (messageId == protocol::MT_SWITCH_PROTOCOL) {
+            std::unique_ptr<protocol::SwitchProtocol> switchProtocol(
+                    protocol::decodeSwitchProtocol(iterator, end));
 
             std::cout << switchProtocol->hostname << std::endl;
             if (switchProtocol->intent == 2)

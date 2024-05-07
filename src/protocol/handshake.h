@@ -6,7 +6,7 @@
 #include <vector>
 
 
-namespace protocol::handshake {
+namespace mcas::protocol {
 
     const int MT_SWITCH_PROTOCOL = 0x00;
 

@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-namespace protocol::login {
+namespace mcas::protocol {
 
     const int MT_LOGIN_REQUEST = 0x00;
     const int MT_LOGIN_SUCCESS = 0x02;

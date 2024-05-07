@@ -4,13 +4,13 @@
 #include "protocol.h"
 #include "../leb128.h"
 
-namespace protocol::login {
+namespace mcas::protocol {
 
     std::vector<char> makeLoginSuccess(uint64_t uuidM, uint64_t uuidL, std::string &name) {
 
         auto buffer = std::vector<char>();
 
-        leb128_encode(buffer, protocol::login::MT_LOGIN_SUCCESS);
+        leb128_encode(buffer, MT_LOGIN_SUCCESS);
 
         copy((char*)&uuidM, ((char*)(&uuidM)) + sizeof(int64_t), back_inserter(buffer));
         copy((char*)&uuidL, ((char*)(&uuidL)) + sizeof(int64_t), back_inserter(buffer));
@@ -23,7 +23,6 @@ namespace protocol::login {
         a = "ewogICJ0aW1lc3RhbXAiIDogMTcxNTAyNDc2ODY0MiwKICAicHJvZmlsZUlkIiA6ICJlYmQ2N2JlMWQ2MTc0NjA0ODMwYmJiNDU1NzZlNmEwOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJkcm9wc190bSIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS85YjVlYTc5MzI4NzhkNGU4YTQ1NTgwOTBmNWQ4Yzc4MTRjNGFlMGMzOTViYmI5MGYyYmQzMTVkNjYzMDkyNGMyIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=";
         pt_write_string(buffer, a);
         leb128_encode(buffer, 0);
-     //   leb128_encode(buffer, 0);
 
         return buffer;
     }
