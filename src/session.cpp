@@ -21,46 +21,49 @@ namespace mcas {
         auto iterator = begin;
 
         int32_t messageId;
-        auto bytes_read = protocol::pt_read_int32_t(iterator, end, &messageId);
+        auto bytes_read = protocol::pt_read_int32(iterator, end, messageId);
         assert(bytes_read > 0 && bytes_read <= 5);
         iterator = next(iterator, bytes_read);
 
         if (messageId == protocol::MT_LOGIN_REQUEST) {
 
-            std::unique_ptr<protocol::Login> login(protocol::decodeLogin(iterator, end));
+            protocol::pts_login_start login;
+            protocol::deserialize_pts_login_start(login, iterator, end);
 
-            std::cout << "New login" << login->name << std::endl;
+            std::cout << "New login" << login.username << std::endl;
 
-            std::string serverId = "123456789012345";
-/*            serverId.reserve(16);
-            generate_n(std::back_inserter(serverId), 16, rand_alnum);*/
+            protocol::ptc_login_encryption_begin encryptionBegin;
+            encryptionBegin.serverId = "123456789012345";
+            encryptionBegin.publicKey = connection.rsaEncryption().getPublicKey();
+            generate_n(std::back_inserter(encryptionBegin.verifyToken), 4, std::rand);
 
-            std::vector<char> vt;
-            vt.reserve(4);
-            generate_n(std::back_inserter(vt), 4, std::rand);
+            std::vector<char> message;
+            protocol::serialize_ptc_login_encryption_begin(encryptionBegin, message);
 
-            const std::vector<char> &request = protocol::makeEncryptionRequest(serverId, connection.rsaEncryption().getPublicKey(), vt);
-
-            connection.send(request);
+            connection.send(message);
 
         } else if (messageId == 0x01) {
 
-            protocol::EncryptionResponse *response = protocol::decodeEncryptionResponse(iterator, end);
+            protocol::pts_login_encryption_begin encryptionBegin;
+            protocol::deserialize_pts_login_encryption_begin(encryptionBegin, iterator, end);
 
             std::vector<char> vt = {'v', 't', 'v', 't'};
             std::vector<char> decodedToken;
             std::vector<char> decodedSecret;
 
-            connection.rsaEncryption().decrypt(decodedSecret, response->secret.data(), response->secret.size());
-            connection.rsaEncryption().decrypt(decodedToken, response->token.data(), response->token.size());
+            connection.rsaEncryption().decrypt(decodedSecret, encryptionBegin.sharedSecret.data(), encryptionBegin.sharedSecret.size());
+            connection.rsaEncryption().decrypt(decodedToken, encryptionBegin.verifyToken.data(), encryptionBegin.verifyToken.size());
 
             std::shared_ptr<encryption::AESEncryption> pEncryption(new encryption::AESEncryption(decodedSecret, decodedSecret));
             connection.aesEncryption(pEncryption);
 
-            std::string login;
-            const std::vector<char> &success = protocol::makeLoginSuccess(0,
-                                                                                 0x0,
-                                                                                 login);
+            std::vector<char> out;
+            protocol::ptc_login_success loginSuccess;
+            loginSuccess.username = "";
+            //loginSuccess.uuid = ;
+            //loginSuccess.properties = ;
+
+            protocol::serialize_ptc_login_success(loginSuccess, out);
 
             protocol::SignedSha1 hash;
 
@@ -71,7 +74,7 @@ namespace mcas {
             const std::string &string = hash.finalise();
             std::cout << "Hash " << string << std::endl;
 
-            connection.send(success);
+            connection.send(out);
         }
     }
 
@@ -79,7 +82,7 @@ namespace mcas {
         auto iterator = begin;
 
         int32_t messageId;
-        auto bytes_read = protocol::pt_read_int32_t(iterator, end, &messageId);
+        auto bytes_read = protocol::pt_read_int32(iterator, end, messageId);
         assert(bytes_read > 0 && bytes_read <= 5);
         iterator = next(iterator, bytes_read);
 

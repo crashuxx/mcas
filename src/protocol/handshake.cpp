@@ -36,7 +36,7 @@ namespace mcas::protocol {
         auto it = begin;
         auto *switchProtocol = new SwitchProtocol();
 
-        ptrdiff_t bytes_read = pt_read_int32_t(it, end, &switchProtocol->protocolVersion);
+        ptrdiff_t bytes_read = pt_read_int32(it, end, switchProtocol->protocolVersion);
         assert(bytes_read >= 0);
         it = next(it, bytes_read);
 
@@ -44,11 +44,11 @@ namespace mcas::protocol {
         assert(bytes_read >= 0);
         it = next(it, bytes_read);
 
-        bytes_read = pt_read_int16_t(it, end, &switchProtocol->port);
+        bytes_read = pt_read_int16(it, end, switchProtocol->port);
         assert(bytes_read >= 0);
         it = next(it, bytes_read);
 
-        bytes_read = pt_read_int32_t(it, end, &switchProtocol->intent);
+        bytes_read = pt_read_int32(it, end, switchProtocol->intent);
         assert(bytes_read >= 0);
 
         assert(next(it) == end);

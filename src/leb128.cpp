@@ -41,7 +41,7 @@ ptrdiff_t leb128_encode(const std::vector<char>::iterator &iterator, int32_t val
 ptrdiff_t leb128_decode_int32(
         const std::vector<char>::iterator &begin,
         const std::vector<char>::iterator &end,
-        int32_t *value) {
+        int32_t &value) {
     unsigned int shift = 0;
     int32_t result = 0;
     uint8_t byte;
@@ -49,7 +49,7 @@ ptrdiff_t leb128_decode_int32(
     std::vector<char>::iterator it = begin;
 
     do {
-        if (it >= end) {
+        if (it == end) {
             return 0;
         }
 
@@ -61,9 +61,9 @@ ptrdiff_t leb128_decode_int32(
 
     } while ((byte & 0x80) != 0);
 
-    if (shift < (sizeof(*value) * 8) && (byte & 0x40) != 0)
+    if (shift < (sizeof(value) * 8) && (byte & 0x40) != 0)
         result |= -(((int32_t) 1) << shift);
 
-    *value = result;
+    value = result;
     return it - begin;
 }
