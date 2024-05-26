@@ -8,12 +8,6 @@ namespace mcas::protocol {
     const int MT_LOGIN_REQUEST = 0x00;
     const int MT_LOGIN_SUCCESS = 0x02;
 
-    struct property_t {
-        std::string name;
-        std::string value;
-        std::string signature; //optional
-    };
-
     struct ptc_login_disconnect {
         std::string reason;
     };

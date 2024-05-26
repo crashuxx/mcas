@@ -10,7 +10,7 @@
 namespace mcas::protocol {
 
     typedef int32_t varint_t;
-    typedef int64_t uuid_t[2];
+    typedef uint8_t uuid_t[16];
     typedef double f64_t;
     typedef float f32_t;
 
@@ -27,6 +27,12 @@ namespace mcas::protocol {
         int32_t z;
         int32_t y;
     };  // 24 24 16 = 64bits
+
+    struct property_t {
+        std::string name;
+        std::string value;
+        std::string signature; //optional
+    };
 }
 
 #endif //MCAS_TYPES_H

@@ -8,7 +8,9 @@ namespace mcas::encryption {
 
     class AESEncryption {
     public:
+        AESEncryption();
         AESEncryption(std::vector<char> key, std::vector<char> iv);
+        void init(std::vector<char> &key, std::vector<char> &iv);
 
         virtual ~AESEncryption();
 
@@ -17,6 +19,8 @@ namespace mcas::encryption {
         size_t decrypt(std::vector<char> &output, void *input, size_t inputSize);
 
     private:
+        void cleanup();
+
         void *ectx = nullptr;
         void *dctx = nullptr;
     };

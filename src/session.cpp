@@ -7,6 +7,7 @@
 #include "encryption/RSAEncryption.h"
 #include "leb128.h"
 #include "hash.h"
+#include "externalAuth.h"
 
 namespace mcas {
 
@@ -16,6 +17,16 @@ namespace mcas {
         return c;
     }
 
+    inline uint8_t hex2uint8(const char *hex) {
+        uint8_t result = 0;
+        for (const char *h = hex + 2; hex != h; ++hex) {
+            result <<= 4;
+            if (*hex >= '0' && *hex <= '9') result |= *hex - '0';
+            else if (*hex >= 'a' && *hex <= 'f') result |= *hex - 'a' + 10;
+            else if (*hex >= 'A' && *hex <= 'F') result |= *hex - 'A' + 10;
+        }
+        return result;
+    }
 
     void login_handler(TcpConnection &connection, std::vector<char>::iterator &begin, std::vector<char>::iterator &end) {
         auto iterator = begin;
@@ -57,21 +68,34 @@ namespace mcas {
             std::shared_ptr<encryption::AESEncryption> pEncryption(new encryption::AESEncryption(decodedSecret, decodedSecret));
             connection.aesEncryption(pEncryption);
 
-            std::vector<char> out;
-            protocol::ptc_login_success loginSuccess;
-            loginSuccess.username = "";
-            //loginSuccess.uuid = ;
-            //loginSuccess.properties = ;
-
-            protocol::serialize_ptc_login_success(loginSuccess, out);
-
             protocol::SignedSha1 hash;
-
             std::string serverId = "123456789012345";
             hash.update(serverId);
             hash.update(decodedSecret);
             hash.update(connection.rsaEncryption().getPublicKey());
             const std::string &string = hash.finalise();
+
+            std::string username = "...";
+            std::unique_ptr<mcsa::accountData_t> accData(mcsa::external_hasJoined(username, string));
+
+            if (accData == nullptr) {
+                return;
+            }
+
+            std::vector<char> out;
+            protocol::ptc_login_success loginSuccess;
+            loginSuccess.username = accData->name;
+            auto uuid_ptr = (uint8_t *) loginSuccess.uuid;
+
+            for (size_t i = 0, ptr_shift = 0; ptr_shift + 1 < accData->id.size() && i < sizeof(loginSuccess.uuid); i++, ptr_shift += 2) {
+                uuid_ptr[i] = hex2uint8(accData->id.c_str() + ptr_shift);
+            }
+
+            //loginSuccess.properties = ;
+
+            protocol::serialize_ptc_login_success(loginSuccess, out);
+
+            std::cout << "id " << accData->id << std::endl;
             std::cout << "Hash " << string << std::endl;
 
             connection.send(out);

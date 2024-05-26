@@ -224,6 +224,7 @@ namespace mcas::protocol {
         if (bytesRead < 0) return -1;
         it += bytesRead;
 
+        it += 1; // ?? why there's 01h ?
         bytesRead = pt_read_uuid(it, end, data.playerUUID);
         if (bytesRead < 0) return -1;
 

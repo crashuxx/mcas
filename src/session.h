@@ -9,6 +9,12 @@
 
 namespace mcas {
 
+    struct session_t {
+        TcpConnection connection;
+
+
+    };
+
 /*    class Session {
     public:
         explicit Session(TcpConnection& connection, const std::weak_ptr<TcpConnection> &a);
